@@ -13,9 +13,14 @@
 #include <vector>
 #include <fstream>
 #include <functional>
+#include <limits>
+#include <sqlite3.h>
+#include <stdexcept>
 #include "user.h"
 #include "product.h"
 #include "user_manager.h"
 #include "product_manager.h"
+#include "menu.h"
+#include "database_manager.h"
 
 #endif // include_H

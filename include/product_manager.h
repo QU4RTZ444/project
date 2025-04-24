@@ -11,6 +11,7 @@
 class ProductManager {
   private:
       std::vector<std::shared_ptr<Product>> products;
+      std::unordered_map<std::string, double> categoryDiscounts; // 品类折扣
   
   public:
       void addProduct(const std::shared_ptr<Product>& product);
@@ -18,6 +19,7 @@ class ProductManager {
       void searchProduct(const std::string& keyword) const;
       void saveToFile() const;
       void loadFromFile();
+      void setCategoryDiscount(const std::string& category, double discount);
 };
 
 #endif // product_manager_H
