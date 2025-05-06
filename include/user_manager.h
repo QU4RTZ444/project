@@ -8,14 +8,16 @@
 
 #include "include.h"
 
+class User;
+class DatabaseManager;
+
 class UserManager {
 private:
-    // 存储所有用户信息的哈希表
-    // key: 用户名
-    // value: 用户对象的智能指针
-    std::unordered_map<std::string, std::shared_ptr<User>> users;
+    DatabaseManager* db;
 
 public:
+    UserManager() : db(DatabaseManager::getInstance()) {}
+
     // 注册新用户
     // @param uname: 用户名
     // @param pwd: 密码
@@ -29,11 +31,16 @@ public:
     // @return: 登录成功返回用户对象指针，失败返回nullptr
     std::shared_ptr<User> login(const std::string& uname, const std::string& pwd);
 
-    // 将用户数据保存到文件
-    void saveToFile() const;
+    // 获取用户余额
+    // @param uname: 用户名
+    // @return: 返回用户余额
+    double getBalance(const std::string& uname) const;
 
-    // 从文件加载用户数据
-    void loadFromFile();
+    // 更新用户余额
+    // @param uname: 用户名
+    // @param newBalance: 新的余额
+    // @return: 更新成功返回true，失败返回false
+    bool updateBalance(const std::string& uname, double newBalance);
 };
 
 #endif // user_manager_H

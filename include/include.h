@@ -16,11 +16,16 @@
 #include <limits>
 #include <sqlite3.h>
 #include <stdexcept>
+#include <sstream>
+
+// 先包含基础类
+#include "database_manager.h"
 #include "user.h"
 #include "product.h"
+
+// 再包含管理器类
 #include "user_manager.h"
 #include "product_manager.h"
 #include "menu.h"
-#include "database_manager.h"
 
 #endif // include_H

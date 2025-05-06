@@ -12,14 +12,19 @@ class DatabaseManager {
 private:
     sqlite3* db;
     static DatabaseManager* instance;
+    static const std::string DB_FILE;
     
     DatabaseManager();  // 单例模式
     
 public:
     static DatabaseManager* getInstance();
     void init();
-    void close();
     void executeQuery(const std::string& query);
+    void beginTransaction();
+    void commit();
+    void rollback();
+    void close();
+    sqlite3* getHandle() {return db;}
     
     // 防止复制
     DatabaseManager(const DatabaseManager&) = delete;

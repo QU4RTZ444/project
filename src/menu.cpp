@@ -1,17 +1,39 @@
 #include "include.h"
+#include "menu.h"
+
+void Menu::showMainMenu() {
+  clearScreen();
+  std::cout << "\n┌────────────────────────────────┐\n";
+  std::cout << "│        电商交易平台主菜单      │\n";
+  std::cout << "├────────────────────────────────┤\n";
+  std::cout << "│  1. 用户登录                   │\n";
+  std::cout << "│  2. 用户注册                   │\n";
+  std::cout << "│  3. 浏览所有商品              │\n";
+  std::cout << "│  0. 退出系统                   │\n";
+  std::cout << "└────────────────────────────────┘\n";
+}
 
 void Menu::displayMainMenu() {
-  clearScreen();
-  std::cout << "\n=====================================\n";
-  std::cout << "        欢迎使用电商交易平台        \n";
-  std::cout << "=====================================\n";
-  std::cout << "1. 用户登录\n";
-  std::cout << "2. 用户注册\n";
-  std::cout << "3. 浏览商品\n";
-  std::cout << "4. 搜索商品\n";
-  std::cout << "0. 退出系统\n";
-  std::cout << "-------------------------------------\n";
-  std::cout << "请选择操作 [0-4]: ";
+  while(true){
+    showMainMenu();
+
+    int choice = getChoice(0, 3);
+
+    switch(choice){
+      case 0://退出
+        std::cout<<"感谢使用，再见！\n";
+        return;
+
+      case 1://用户登录
+        break;
+
+      case 2://用户注册
+        break;
+
+      case 3://浏览商品
+        break;
+    }
+  }
 }
 
 void Menu::displayUserMenu(const std::shared_ptr<User>& currentUser) {
