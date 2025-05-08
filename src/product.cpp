@@ -4,12 +4,18 @@ double Product::getPrice() const{
   return basePrice;
 }
 
-void Product::display() const{
-  std::cout << "商品名称: " << name << "\n"
-              << "描述: " << description << "\n"
-              << "价格: " << getPrice() << "\n"
-              << "库存: " << quantity << "\n"
-              << "商家: " << (sellerUsername.empty() ? "未知" : sellerUsername) << "\n";
+void Product::display() const {
+    try {
+        std::cout << "商品ID: " << id << "\n"
+                  << "名称: " << name << "\n"
+                  << "类别: " << getCategory() << "\n"
+                  << "描述: " << description << "\n"
+                  << "价格: " << basePrice << "元\n"
+                  << "库存: " << quantity << "\n"
+                  << "卖家: " << sellerUsername << "\n";
+    } catch (const std::exception& e) {
+        throw std::runtime_error("显示商品信息时出错: " + std::string(e.what()));
+    }
 }
 
 void Product::updatePrice(double newPrice){

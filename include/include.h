@@ -23,6 +23,7 @@
 #include "user.h"
 #include "product.h"
 #include "platform_utils.h"
+#include "menu_handler.h"
 
 // 再包含管理器类
 #include "user_manager.h"

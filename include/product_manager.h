@@ -27,6 +27,13 @@ public:
     // 搜索商品
     std::vector<std::shared_ptr<Product>> searchProducts(const std::string& keyword) const;
     
+    // 获取指定商家的所有商品
+    std::vector<std::shared_ptr<Product>> getSellerProducts(const std::string& sellerUsername) const;
+    
+    // 更新商品信息
+    bool updateProduct(int productId, const std::string& name, const std::string& description, 
+                      double price, int quantity);
+    
     // 更新商品数量
     bool updateQuantity(int productId, int newQuantity);
     
@@ -35,6 +42,15 @@ public:
     
     // 删除商品
     bool deleteProduct(int productId);
+    
+    // 删除商品
+    bool removeProduct(int productId, const std::string& sellerUsername);
+    
+    // 修改商品价格
+    bool updatePrice(int productId, double newPrice, const std::string& sellerUsername);
+    
+    // 修改商品库存
+    bool updateQuantity(int productId, int newQuantity, const std::string& sellerUsername);
 };
 
 #endif // PRODUCT_MANAGER_H
