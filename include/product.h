@@ -15,6 +15,7 @@ private:
     std::string description;  // 商品描述信息
     double basePrice;         // 商品基础价格，未计算折扣
     int quantity;             // 商品库存数量
+    std::string sellerUsername; // 商家用户名
 
 public:
     // 构造函数：初始化商品基本信息
@@ -22,8 +23,8 @@ public:
     // @param desc: 商品描述
     // @param price: 商品价格
     // @param qty: 商品数量
-    Product(const std::string& n, const std::string& desc, double price, int qty)
-        : name(n), description(desc), basePrice(price), quantity(qty) {}
+    Product(const std::string& n, const std::string& desc, double price, int qty, const std::string& seller = "")
+        : name(n), description(desc), basePrice(price), quantity(qty), sellerUsername(seller) {}
 
     // 虚析构函数
     virtual ~Product() = default;
@@ -38,29 +39,36 @@ public:
     virtual void display() const;
 
     void updatePrice(double newPrice);
+
     void updateQuantity(int newQty);
+
     const std::string& getName() const;
+
+    const std::string& getSeller() const { return sellerUsername; }
 };
 
 class Book : public Product {
-  public:
-      Book(const std::string& n, const std::string& desc, double price, int qty)
-          : Product(n, desc, price, qty) {}
-      std::string getCategory() const override;
+public:
+    Book(const std::string& n, const std::string& desc, double price, int qty,
+         const std::string& seller = "")
+        : Product(n, desc, price, qty, seller) {}
+    std::string getCategory() const override { return "图书"; }
 };
 
 class Food : public Product {
-  public:
-      Food(const std::string& n, const std::string& desc, double price, int qty)
-          : Product(n, desc, price, qty) {}
-      std::string getCategory();
+public:
+    Food(const std::string& n, const std::string& desc, double price, int qty,
+         const std::string& seller = "")
+        : Product(n, desc, price, qty, seller) {}
+    std::string getCategory() const override { return "食品"; }
 };
 
 class Clothing : public Product {
-  public:
-    Clothing(const std::string& n, const std::string& desc, double price, int qty)
-      : Product(n, desc, price, qty) {}
-    std::string getCategory();
+public:
+    Clothing(const std::string& n, const std::string& desc, double price, int qty,
+             const std::string& seller = "")
+        : Product(n, desc, price, qty, seller) {}
+    std::string getCategory() const override { return "服装"; }
 };
 
 #endif // product_H

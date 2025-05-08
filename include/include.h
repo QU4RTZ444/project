@@ -22,6 +22,7 @@
 #include "database_manager.h"
 #include "user.h"
 #include "product.h"
+#include "platform_utils.h"
 
 // 再包含管理器类
 #include "user_manager.h"

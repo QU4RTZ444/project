@@ -7,7 +7,6 @@ int main() {
   ProductManager productManager;
   Menu m;
 
-  // 加载用户与商品数据
   //userManager.loadFromFile();
   //productManager.loadFromFile();
 

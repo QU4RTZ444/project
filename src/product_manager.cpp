@@ -4,6 +4,11 @@ bool ProductManager::addProduct(const std::string& name, const std::string& cate
                               const std::string& description, double price,
                               int quantity, const std::string& sellerUsername) {
     try {
+        // 添加参数验证
+        if (name.empty() || category.empty() || price <= 0 || quantity < 0) {
+            return false;
+        }
+
         const char* query = "INSERT INTO products (name, category, description, price, "
                            "quantity, seller_username) VALUES (?, ?, ?, ?, ?, ?);";
         
@@ -25,6 +30,7 @@ bool ProductManager::addProduct(const std::string& name, const std::string& cate
         
         return result == SQLITE_DONE;
     } catch (const std::exception& e) {
+        std::cerr << "添加商品失败: " << e.what() << std::endl;
         return false;
     }
 }
@@ -37,24 +43,25 @@ std::vector<std::shared_ptr<Product>> ProductManager::getAllProducts() const {
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db->getHandle(), query, -1, &stmt, nullptr) == SQLITE_OK) {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
-            int id = sqlite3_column_int(stmt, 0);
             std::string name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
             std::string category = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
             std::string description = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
             double price = sqlite3_column_double(stmt, 4);
             int quantity = sqlite3_column_int(stmt, 5);
+            std::string seller = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6));
             
-            // 根据不同类别创建对应的商品对象
             std::shared_ptr<Product> product;
-            if (category == "食品") {
-                product = std::make_shared<Food>(name, description, price, quantity);
+            if (category == "图书") {
+                product = std::make_shared<Book>(name, description, price, quantity, seller);
+            } else if (category == "食品") {
+                product = std::make_shared<Food>(name, description, price, quantity, seller);
             } else if (category == "服装") {
-                product = std::make_shared<Clothing>(name, description, price, quantity);
-            } else {
-                product = std::make_shared<Product>(name, description, price, quantity);
+                product = std::make_shared<Clothing>(name, description, price, quantity, seller);
             }
             
-            products.push_back(product);
+            if (product) {
+                products.push_back(product);
+            }
         }
     }
     sqlite3_finalize(stmt);

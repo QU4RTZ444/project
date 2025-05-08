@@ -8,7 +8,8 @@ void Product::display() const{
   std::cout << "商品名称: " << name << "\n"
               << "描述: " << description << "\n"
               << "价格: " << getPrice() << "\n"
-              << "库存: " << quantity << "\n";
+              << "库存: " << quantity << "\n"
+              << "商家: " << (sellerUsername.empty() ? "未知" : sellerUsername) << "\n";
 }
 
 void Product::updatePrice(double newPrice){
@@ -25,19 +26,4 @@ void Product::updateQuantity(int newQty){
 
 const std::string &Product::getName() const{
   return name;
-}
-
-std::string Book::getCategory() const
-{
-  return "书";
-}
-
-std::string Food::getCategory()
-{
-  return "食品";
-}
-
-std::string Clothing::getCategory()
-{
-  return "服装";
 }

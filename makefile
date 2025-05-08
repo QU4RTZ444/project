@@ -2,6 +2,9 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra
 
+#linux平台
+CXXFLAGS += -D__linux__
+
 # 目录设置
 SRC_DIR = src
 INC_DIR = include

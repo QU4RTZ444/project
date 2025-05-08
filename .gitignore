@@ -1,1 +1,5 @@
 .vscode
+build
+bin
+key_hash
+key_hash.cpp

@@ -21,9 +21,6 @@ private:
     
     // 显示商品管理菜单
     static void showProductMenu();
-    
-    // 清理控制台屏幕，实现跨平台支持
-    static void clearScreen();
 
 public:
     // 显示主菜单并处理用户输入
@@ -38,6 +35,9 @@ public:
     // @param max: 最大有效值
     // @return: 返回用户输入的有效选项
     static int getChoice(int min, int max);
+
+    // 清理控制台屏幕，实现跨平台支持
+    static void clearScreen();
 };
 
 #endif // menu_H
