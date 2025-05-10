@@ -17,6 +17,9 @@
 #include <sqlite3.h>
 #include <stdexcept>
 #include <sstream>
+#include <chrono>
+#include <ctime>
+#include <filesystem>
 
 // 先包含基础类
 #include "database_manager.h"

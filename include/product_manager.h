@@ -65,6 +65,15 @@ public:
     // 设置品类折扣
     bool setCategoryDiscount(const std::string& category, double discountRate, 
                            const std::string& sellerUsername);
+    
+    // 搜索商品按类别
+    std::vector<std::shared_ptr<Product>> searchByCategory(const std::string& category) const;
+    
+    // 搜索商品按价格范围
+    std::vector<std::shared_ptr<Product>> searchByPriceRange(double minPrice, double maxPrice) const;
+    
+    // 搜索商品按名称
+    std::vector<std::shared_ptr<Product>> searchByName(const std::string& keyword) const;
 };
 
 #endif // PRODUCT_MANAGER_H

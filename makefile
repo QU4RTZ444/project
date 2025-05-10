@@ -1,66 +1,76 @@
-# 编译器设置
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra
-
-#linux平台
-CXXFLAGS += -D__linux__
-
-# 目录设置
-SRC_DIR = src
-INC_DIR = include
-BUILD_DIR = build
-BIN_DIR = bin
-
-# 源文件和目标文件
-SRCS = $(shell find $(SRC_DIR) -name "*.cpp")
-OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
-TARGET = $(BIN_DIR)/ecommerce
-
-# 数据库相关
+CXXFLAGS = -std=c++17 -Wall -Wextra -D__linux__
+DEBUGFLAGS = -DDEBUG -g -O0
+RELEASEFLAGS = -O2 -DNDEBUG
+INCLUDES = -Iinclude
 LIBS = -lsqlite3
 
-# 确保目录存在
-$(shell mkdir -p $(BUILD_DIR) $(BIN_DIR))
+# 添加 JSON 库头文件路径
+INCLUDES += -I/usr/include/nlohmann
+
+# 目标文件目录
+BUILD_DIR = build
+BIN_DIR = bin
+RELEASE_DIR = $(BIN_DIR)/release
+
+# 源文件
+SRCS = $(wildcard src/*.cpp)
+OBJS = $(SRCS:src/%.cpp=$(BUILD_DIR)/%.o)
+RELEASE_OBJS = $(SRCS:src/%.cpp=$(BUILD_DIR)/release/%.o)
+
+# 可执行文件
+TARGET = $(BIN_DIR)/ecommerce
+RELEASE_TARGET = $(RELEASE_DIR)/ecommerce
 
 # 默认目标
-all: $(TARGET)
+all: debug
 
-# 链接目标文件
-$(TARGET): $(OBJS)
-	@mkdir -p $(@D)
-	$(CXX) $(OBJS) -o $(TARGET) $(LIBS)
-	@echo "编译完成: $(TARGET)"
+# Debug版本
+debug: CXXFLAGS += $(DEBUGFLAGS)
+debug: $(TARGET)
 
-# 编译源文件
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(@D)
-	$(CXX) $(CXXFLAGS) -I$(INC_DIR) -c $< -o $@
+# Release版本
+release: CXXFLAGS += $(RELEASEFLAGS)
+release: $(RELEASE_TARGET)
 
-# 清理编译产物
+# 创建目录
+$(BUILD_DIR):
+		mkdir -p $(BUILD_DIR)
+		mkdir -p $(BUILD_DIR)/release
+
+$(BIN_DIR):
+		mkdir -p $(BIN_DIR)
+		mkdir -p $(RELEASE_DIR)
+
+# Debug版本编译规则
+$(BUILD_DIR)/%.o: src/%.cpp | $(BUILD_DIR)
+		$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+# Release版本编译规则
+$(BUILD_DIR)/release/%.o: src/%.cpp | $(BUILD_DIR)
+		$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+# Debug版本链接规则
+$(TARGET): $(OBJS) | $(BIN_DIR)
+		$(CXX) $(OBJS) -o $(TARGET) $(LIBS)
+	@echo "Debug版本构建完成: $(TARGET)"
+
+# Release版本链接规则
+$(RELEASE_TARGET): $(RELEASE_OBJS) | $(BIN_DIR)
+		$(CXX) $(RELEASE_OBJS) -o $(RELEASE_TARGET) $(LIBS)
+		strip $(RELEASE_TARGET)
+	@echo "Release版本构建完成: $(RELEASE_TARGET)"
+
+# 打包规则
+dist: release
+		mkdir -p $(RELEASE_DIR)/dist
+		cp $(RELEASE_TARGET) $(RELEASE_DIR)/dist/
+		cp -r data $(RELEASE_DIR)/dist/
+		cd $(RELEASE_DIR) && tar czf ecommerce.tar.gz dist
+	@echo "发布包已创建: $(RELEASE_DIR)/ecommerce.tar.gz"
+
+# 清理规则
 clean:
-	rm -rf $(BUILD_DIR) $(BIN_DIR)
-	@echo "清理完成"
+		rm -rf $(BUILD_DIR) $(BIN_DIR)
 
-# 运行程序
-run: $(TARGET)
-	./$(TARGET)
-
-# 创建发布版本
-release: CXXFLAGS += -O2 -DNDEBUG
-release: clean all
-
-# 创建调试版本
-debug: CXXFLAGS += -g -DDEBUG
-debug: clean all
-
-# 声明伪目标
-.PHONY: all clean run release debug
-
-# 显示帮助信息
-help:
-	@echo "可用的 make 命令："
-	@echo "  make        - 构建项目"
-	@echo "  make clean  - 清理构建文件"
-	@echo "  make run    - 运行程序"
-	@echo "  make debug  - 构建调试版本"
-	@echo "  make release- 构建发布版本"
+.PHONY: all debug release clean dist

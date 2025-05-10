@@ -56,70 +56,17 @@ public:
             Menu::clearScreen();
             if (currentUser->getUserType() == "消费者") {
                 Menu::showConsumerMenu();
-                if (handleConsumerChoice(currentUser)) {
-                    return;  // 如果返回 true，则退出到主菜单
+                if (handler.handleConsumerChoice(currentUser)) {  // 使用 MenuHandler 的实现
+                    return;
                 }
             } else if (currentUser->getUserType() == "商家") {
                 Menu::showSellerMenu();
-                if (handleSellerChoice(currentUser)) {
-                    return;  // 如果返回 true，则退出到主菜单
+                if (handler.handleSellerChoice(currentUser)) {  // 使用 MenuHandler 的实现
+                    return;
                 }
             }
             handler.waitForKey();
         }
-    }
-
-private:
-    // 修改返回类型为 bool，true 表示要退出到上层菜单
-    bool handleConsumerChoice(const std::shared_ptr<User>& currentUser) {
-        int choice = Menu::getChoice(0, 6);
-        switch(choice) {
-            case 0: 
-                return true;  // 返回上层菜单
-            case 1: 
-                handler.handleBrowseProducts();
-                break;
-            case 2:
-                handler.handleSearchProducts();
-                break;
-            case 3:
-                std::cout << "购物车功能开发中...\n";
-                break;
-            case 4:
-                std::cout << "订单历史功能开发中...\n";
-                break;
-            case 5:
-                handler.handleBalance(currentUser->getUsername());
-                break;
-            case 6:
-                handler.handleChangePassword(currentUser->getUsername());
-                break;
-        }
-        return false;  // 继续当前菜单
-    }
-
-    bool handleSellerChoice(const std::shared_ptr<User>& currentUser) {
-        int choice = Menu::getChoice(0, 5);
-        switch(choice) {
-            case 0: 
-                return true;  // 返回上层菜单
-            case 1:
-                handler.handleAddProduct(currentUser->getUsername());
-                break;
-            case 2:
-                handler.handleManageProducts(currentUser->getUsername());
-                break;
-            case 3:
-                std::cout << "销售统计功能开发中...\n";
-                break;
-            case 4:
-                handler.handleBalance(currentUser->getUsername());
-                break;
-            case 5:
-                handler.handleChangePassword(currentUser->getUsername());
-                break;
-        }
-        return false;  // 继续当前菜单
     }
 };
 
@@ -151,23 +98,20 @@ void Menu::showConsumerMenu() {
     std::cout << "\n==== 消费者菜单 ====\n";
     std::cout << "1. 查看商品列表\n";
     std::cout << "2. 搜索商品\n";
-    std::cout << "3. 查看购物车\n";
-    std::cout << "4. 查看订单历史\n";
-    std::cout << "5. 账户余额管理\n";
-    std::cout << "6. 修改密码\n";
+    std::cout << "3. 账户余额管理\n";
+    std::cout << "4. 修改密码\n";
     std::cout << "0. 退出登录\n";
-    std::cout << "请选择操作 [0-6]: ";
+    std::cout << "请选择操作 [0-4]: ";
 }
 
 void Menu::showSellerMenu() {
     std::cout << "\n==== 商家菜单 ====\n";
     std::cout << "1. 添加新商品\n";
     std::cout << "2. 管理商品\n";
-    std::cout << "3. 查看销售统计\n";
-    std::cout << "4. 账户余额查询\n";
-    std::cout << "5. 修改密码\n";
+    std::cout << "3. 账户余额管理\n";
+    std::cout << "4. 修改密码\n";
     std::cout << "0. 退出登录\n";
-    std::cout << "请选择操作 [0-5]: ";
+    std::cout << "请选择操作 [0-4]: ";
 }
 
 int Menu::getChoice(int min, int max) {

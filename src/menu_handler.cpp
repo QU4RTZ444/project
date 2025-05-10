@@ -209,7 +209,9 @@ void MenuHandler::displayUserMenu(const std::shared_ptr<User>& currentUser) {
         Menu::clearScreen();
         if (currentUser->getUserType() == "消费者") {
             Menu::showConsumerMenu();
-            handleConsumerChoice(currentUser);
+            if (handleConsumerChoice(currentUser)) {
+                return;
+            }
         } else if (currentUser->getUserType() == "商家") {
             Menu::showSellerMenu();
             handleSellerChoice(currentUser);
@@ -218,10 +220,11 @@ void MenuHandler::displayUserMenu(const std::shared_ptr<User>& currentUser) {
     }
 }
 
-void MenuHandler::handleConsumerChoice(const std::shared_ptr<User>& currentUser) {
-    int choice = Menu::getChoice(0, 6);
+bool MenuHandler::handleConsumerChoice(const std::shared_ptr<User>& currentUser) {
+    int choice = Menu::getChoice(0, 4);
     switch(choice) {
-        case 0: return;
+        case 0: 
+            return true;  // 返回上层菜单
         case 1: 
             handleBrowseProducts();
             break;
@@ -229,24 +232,19 @@ void MenuHandler::handleConsumerChoice(const std::shared_ptr<User>& currentUser)
             handleSearchProducts();
             break;
         case 3:
-            std::cout << "购物车功能开发中...\n";
-            break;
-        case 4:
-            std::cout << "订单历史功能开发中...\n";
-            break;
-        case 5:
             handleBalance(currentUser->getUsername());
             break;
-        case 6:
+        case 4:
             handleChangePassword(currentUser->getUsername());
             break;
     }
+    return false;  // 继续当前菜单
 }
 
-void MenuHandler::handleSellerChoice(const std::shared_ptr<User>& currentUser) {
+bool MenuHandler::handleSellerChoice(const std::shared_ptr<User>& currentUser) {
     int choice = Menu::getChoice(0, 5);
     switch(choice) {
-        case 0: return;
+        case 0: return true;  // 返回上层菜单
         case 1:
             handleAddProduct(currentUser->getUsername());
             break;
@@ -254,26 +252,89 @@ void MenuHandler::handleSellerChoice(const std::shared_ptr<User>& currentUser) {
             handleManageProducts(currentUser->getUsername());
             break;
         case 3:
-            handleSalesStatistics(currentUser->getUsername());
-            break;
-        case 4:
             handleBalance(currentUser->getUsername());
             break;
-        case 5:
+        case 4:
             handleChangePassword(currentUser->getUsername());
             break;
     }
+    return false;  // 继续当前菜单
 }
 
 void MenuHandler::handleSearchProducts() const {
-    std::cout << "请输入搜索关键词: ";
-    std::string keyword;
-    std::cin.ignore();
-    std::getline(std::cin, keyword);
-    
-    auto products = productManager.searchProducts(keyword);
+    while (true) {
+        Menu::clearScreen();
+        std::cout << "\n=== 商品搜索 ===\n";
+        std::cout << "1. 按名称搜索\n";
+        std::cout << "2. 按类别筛选\n";
+        std::cout << "3. 按价格区间筛选\n";
+        std::cout << "0. 返回\n";
+        
+        int choice = Menu::getChoice(0, 3);
+        if (choice == 0) return;
+        
+        std::vector<std::shared_ptr<Product>> products;
+        
+        switch (choice) {
+            case 1: {
+                std::cout << "请输入商品名称关键词: ";
+                std::string keyword;
+                std::cin.ignore();
+                std::getline(std::cin, keyword);
+                
+                products = productManager.searchProducts(keyword);
+                displaySearchResults(products, "名称包含 '" + keyword + "'");
+                break;
+            }
+            case 2: {
+                std::cout << "选择商品类别：\n";
+                std::cout << "1. 图书\n";
+                std::cout << "2. 食品\n";
+                std::cout << "3. 服装\n";
+                int categoryChoice = Menu::getChoice(1, 3);
+                
+                std::string category;
+                switch(categoryChoice) {
+                    case 1: category = "图书"; break;
+                    case 2: category = "食品"; break;
+                    case 3: category = "服装"; break;
+                }
+                
+                products = productManager.searchByCategory(category);
+                displaySearchResults(products, "类别为 " + category);
+                break;
+            }
+            case 3: {
+                double minPrice, maxPrice;
+                std::cout << "请输入最低价格: ";
+                while (!(std::cin >> minPrice) || minPrice < 0) {
+                    std::cout << "价格必须为非负数，请重新输入: ";
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                }
+                
+                std::cout << "请输入最高价格: ";
+                while (!(std::cin >> maxPrice) || maxPrice < minPrice) {
+                    std::cout << "价格必须大于最低价格，请重新输入: ";
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                }
+                
+                products = productManager.searchByPriceRange(minPrice, maxPrice);
+                displaySearchResults(products, 
+                    "价格在 " + std::to_string(minPrice) + 
+                    " - " + std::to_string(maxPrice) + " 之间");
+                break;
+            }
+        }
+    }
+}
+
+void MenuHandler::displaySearchResults(const std::vector<std::shared_ptr<Product>>& products,
+                                    const std::string& searchCriteria) const {
     if (products.empty()) {
-        std::cout << "未找到相关商品\n";
+        std::cout << "\n未找到" << searchCriteria << "的商品\n";
+        waitForKey();
         return;
     }
 
@@ -283,7 +344,7 @@ void MenuHandler::handleSearchProducts() const {
     while (true) {
         Menu::clearScreen();
         std::cout << "\n=== 搜索结果 (第 " << currentPage << "/" << totalPages << " 页) ===\n";
-        std::cout << "关键词: " << keyword << "\n\n";
+        std::cout << "筛选条件: " << searchCriteria << "\n\n";
         
         int startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
         int endIdx = std::min(startIdx + ITEMS_PER_PAGE, static_cast<int>(products.size()));
@@ -296,40 +357,48 @@ void MenuHandler::handleSearchProducts() const {
         std::cout << "\n操作说明:\n";
         std::cout << "1. 下一页\n";
         std::cout << "2. 上一页\n";
-        std::cout << "3. 跳转到指定页\n";
+        std::cout << "3. 跳转页面\n";
         std::cout << "0. 返回\n";
         
         int choice = Menu::getChoice(0, 3);
-        switch (choice) {
-            case 0: return;
-            case 1:
-                if (currentPage < totalPages) {
-                    currentPage++;
-                } else {
-                    std::cout << "已经是最后一页了\n";
-                    waitForKey();
-                }
-                break;
-            case 2:
-                if (currentPage > 1) {
-                    currentPage--;
-                } else {
-                    std::cout << "已经是第一页了\n";
-                    waitForKey();
-                }
-                break;
-            case 3:
-                std::cout << "请输入页码 (1-" << totalPages << "): ";
-                int pageNum;
-                std::cin >> pageNum;
-                if (pageNum >= 1 && pageNum <= totalPages) {
-                    currentPage = pageNum;
-                } else {
-                    std::cout << "无效的页码\n";
-                    waitForKey();
-                }
-                break;
-        }
+        if (choice == 0) break;
+        
+        handlePageNavigation(choice, currentPage, totalPages);
+    }
+}
+
+bool MenuHandler::handlePageNavigation(int choice, int& currentPage, int totalPages) const {
+    switch (choice) {
+        case 1:
+            if (currentPage < totalPages) {
+                currentPage++;
+            } else {
+                std::cout << "已经是最后一页了\n";
+                waitForKey();
+            }
+            return true;
+        case 2:
+            if (currentPage > 1) {
+                currentPage--;
+            } else {
+                std::cout << "已经是第一页了\n";
+                waitForKey();
+            }
+            return true;
+        case 3:
+            std::cout << "请输入页码 (1-" << totalPages << "): ";
+            int pageNum;
+            if (std::cin >> pageNum && pageNum >= 1 && pageNum <= totalPages) {
+                currentPage = pageNum;
+            } else {
+                std::cout << "无效的页码\n";
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                waitForKey();
+            }
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -599,8 +668,4 @@ void MenuHandler::handleManageProducts(const std::string& sellerUsername) {
         std::cerr << "商品管理功能发生错误: " << e.what() << std::endl;
         waitForKey();
     }
-}
-
-void MenuHandler::handleSalesStatistics(const std::string& sellerUsername) {
-    std::cout << "销售统计功能开发中...\n";
 }

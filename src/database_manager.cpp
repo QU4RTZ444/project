@@ -1,5 +1,7 @@
 #include "include.h"
 #include "database_manager.h"
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 DatabaseManager* DatabaseManager::instance = nullptr;
 const std::string DatabaseManager::DB_FILE = "ecommerce.db";
@@ -42,15 +44,6 @@ void DatabaseManager::init(){
         "    seller_username TEXT,"
         "    FOREIGN KEY(seller_username) REFERENCES users(username)"
         ");",
-        
-        "CREATE TABLE IF NOT EXISTS cart_items ("
-        "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "    user_username TEXT,"
-        "    product_id INTEGER,"
-        "    quantity INTEGER NOT NULL CHECK(quantity > 0),"
-        "    FOREIGN KEY(user_username) REFERENCES users(username),"
-        "    FOREIGN KEY(product_id) REFERENCES products(id)"
-        ");"
     };
     
     for (const char* query : createTables) {

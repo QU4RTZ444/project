@@ -5,17 +5,24 @@ double Product::getPrice() const{
 }
 
 void Product::display() const {
-    try {
-        std::cout << "商品ID: " << id << "\n"
-                  << "名称: " << name << "\n"
-                  << "类别: " << getCategory() << "\n"
-                  << "描述: " << description << "\n"
-                  << "价格: " << basePrice << "元\n"
-                  << "库存: " << quantity << "\n"
-                  << "卖家: " << sellerUsername << "\n";
-    } catch (const std::exception& e) {
-        throw std::runtime_error("显示商品信息时出错: " + std::string(e.what()));
+    std::cout << "商品ID: " << id << "\n"
+              << "名称: " << name << "\n"
+              << "类别: " << getCategory() << "\n"
+              << "描述: " << description << "\n";
+    
+    // 显示价格信息
+    if (discountRate < 1.0) {
+        // 有折扣时显示原价、折扣和折后价
+        std::cout << "原价: " << basePrice << "元\n"
+                  << "折扣: " << (discountRate * 10) << "折\n"
+                  << "折后价: " << getPrice() << "元\n";
+    } else {
+        // 无折扣时只显示价格
+        std::cout << "价格: " << getPrice() << "元\n";
     }
+    
+    std::cout << "库存: " << quantity << "\n"
+              << "卖家: " << sellerUsername << "\n";
 }
 
 void Product::updatePrice(double newPrice){

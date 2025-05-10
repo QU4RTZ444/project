@@ -11,12 +11,16 @@ private:
     UserManager& userManager;
     ProductManager& productManager;
 
-    void handleConsumerChoice(const std::shared_ptr<User>& currentUser);
-    void handleSellerChoice(const std::shared_ptr<User>& currentUser);
-    
-    void handleSalesStatistics(const std::string& sellerUsername);
+    // 辅助函数：显示搜索结果
+    void displaySearchResults(const std::vector<std::shared_ptr<Product>>& products,
+                            const std::string& searchCriteria) const;
+                            
+    // 辅助函数：处理分页导航
+    bool handlePageNavigation(int choice, int& currentPage, int totalPages) const;
 
 public:
+    bool handleConsumerChoice(const std::shared_ptr<User>& currentUser);
+    bool handleSellerChoice(const std::shared_ptr<User>& currentUser);
     void handleManageProducts(const std::string& sellerUsername);
     MenuHandler(UserManager& um, ProductManager& pm) 
         : userManager(um), productManager(pm) {}

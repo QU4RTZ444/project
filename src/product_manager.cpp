@@ -43,7 +43,7 @@ bool ProductManager::addProduct(const std::string& name, const std::string& cate
 std::vector<std::shared_ptr<Product>> ProductManager::getAllProducts() const {
     std::vector<std::shared_ptr<Product>> products;
     const char* query = "SELECT id, name, category, description, price, quantity, "
-                       "seller_username FROM products;";
+                       "seller_username, discount_rate FROM products;";
     
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db->getHandle(), query, -1, &stmt, nullptr) == SQLITE_OK) {
@@ -55,6 +55,7 @@ std::vector<std::shared_ptr<Product>> ProductManager::getAllProducts() const {
             double price = sqlite3_column_double(stmt, 4);
             int quantity = sqlite3_column_int(stmt, 5);
             std::string seller = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6));
+            double discount = sqlite3_column_double(stmt, 7);
             
             std::shared_ptr<Product> product;
             if (category == "图书") {
@@ -66,6 +67,7 @@ std::vector<std::shared_ptr<Product>> ProductManager::getAllProducts() const {
             }
             
             if (product) {
+                product->setDiscountRate(discount);  // 设置折扣率
                 products.push_back(product);
             }
         }
@@ -76,7 +78,8 @@ std::vector<std::shared_ptr<Product>> ProductManager::getAllProducts() const {
 
 std::vector<std::shared_ptr<Product>> ProductManager::searchProducts(const std::string& keyword) const {
     std::vector<std::shared_ptr<Product>> products;
-    const char* query = "SELECT id, name, category, description, price, quantity, seller_username "
+    const char* query = "SELECT id, name, category, description, price, quantity, "
+                       "seller_username, discount_rate "  // 添加 discount_rate 字段
                        "FROM products WHERE name LIKE ? OR description LIKE ?;";
     
     sqlite3_stmt* stmt;
@@ -93,6 +96,7 @@ std::vector<std::shared_ptr<Product>> ProductManager::searchProducts(const std::
             double price = sqlite3_column_double(stmt, 4);
             int quantity = sqlite3_column_int(stmt, 5);
             std::string seller = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6));
+            double discount = sqlite3_column_double(stmt, 7);  // 获取折扣率
             
             std::shared_ptr<Product> product;
             if (category == "图书") {
@@ -104,6 +108,7 @@ std::vector<std::shared_ptr<Product>> ProductManager::searchProducts(const std::
             }
             
             if (product) {
+                product->setDiscountRate(discount);  // 设置折扣率
                 products.push_back(product);
             }
         }
@@ -114,28 +119,26 @@ std::vector<std::shared_ptr<Product>> ProductManager::searchProducts(const std::
 
 std::vector<std::shared_ptr<Product>> ProductManager::getSellerProducts(const std::string& sellerUsername) const {
     std::vector<std::shared_ptr<Product>> products;
-    // 修改SQL语句，确保获取所有必要字段
-    const char* query = "SELECT id, name, category, description, price, quantity, seller_username "
-                       "FROM products WHERE seller_username = ?;";
+    const char* query = "SELECT id, name, category, description, price, quantity, "
+                       "seller_username, discount_rate FROM products WHERE seller_username = ?;";
     
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db->getHandle(), query, -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, sellerUsername.c_str(), -1, SQLITE_STATIC);
         
         while (sqlite3_step(stmt) == SQLITE_ROW) {
-            // 安全地获取数据
             int id = sqlite3_column_int(stmt, 0);
             const char* namePtr = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
             const char* categoryPtr = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
             const char* descPtr = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
             
-            // 检查空指针
             std::string name = namePtr ? namePtr : "";
             std::string category = categoryPtr ? categoryPtr : "";
             std::string description = descPtr ? descPtr : "";
             
             double price = sqlite3_column_double(stmt, 4);
             int quantity = sqlite3_column_int(stmt, 5);
+            double discount = sqlite3_column_double(stmt, 7);
             
             try {
                 std::shared_ptr<Product> product;
@@ -148,6 +151,7 @@ std::vector<std::shared_ptr<Product>> ProductManager::getSellerProducts(const st
                 }
                 
                 if (product) {
+                    product->setDiscountRate(discount);  // 设置折扣率
                     products.push_back(product);
                 }
             } catch (const std::exception& e) {
@@ -432,4 +436,120 @@ bool ProductManager::setCategoryDiscount(const std::string& category, double dis
     #endif
 
     return result == SQLITE_DONE;
+}
+
+std::vector<std::shared_ptr<Product>> ProductManager::searchByCategory(const std::string& category) const {
+    std::vector<std::shared_ptr<Product>> products;
+    const char* query = "SELECT id, name, category, description, price, quantity, "
+                       "seller_username, discount_rate FROM products WHERE category = ?;";
+    
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db->getHandle(), query, -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, category.c_str(), -1, SQLITE_STATIC);
+        
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            int id = sqlite3_column_int(stmt, 0);
+            std::string name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            std::string desc = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+            double price = sqlite3_column_double(stmt, 4);
+            int quantity = sqlite3_column_int(stmt, 5);
+            std::string seller = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6));
+            double discount = sqlite3_column_double(stmt, 7);
+            
+            std::shared_ptr<Product> product;
+            if (category == "图书") {
+                product = std::make_shared<Book>(id, name, desc, price, quantity, seller);
+            } else if (category == "食品") {
+                product = std::make_shared<Food>(id, name, desc, price, quantity, seller);
+            } else if (category == "服装") {
+                product = std::make_shared<Clothing>(id, name, desc, price, quantity, seller);
+            }
+            
+            if (product) {
+                product->setDiscountRate(discount);  // 设置折扣率
+                products.push_back(product);
+            }
+        }
+    }
+    sqlite3_finalize(stmt);
+    return products;
+}
+
+std::vector<std::shared_ptr<Product>> ProductManager::searchByPriceRange(
+    double minPrice, double maxPrice) const {
+    std::vector<std::shared_ptr<Product>> products;
+    const char* query = "SELECT id, name, category, description, price, quantity, "
+                       "seller_username, discount_rate FROM products WHERE price BETWEEN ? AND ?;";
+    
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db->getHandle(), query, -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_double(stmt, 1, minPrice);
+        sqlite3_bind_double(stmt, 2, maxPrice);
+        
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            int id = sqlite3_column_int(stmt, 0);
+            std::string name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            std::string category = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+            std::string desc = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+            double price = sqlite3_column_double(stmt, 4);
+            int quantity = sqlite3_column_int(stmt, 5);
+            std::string seller = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6));
+            double discount = sqlite3_column_double(stmt, 7);
+            
+            std::shared_ptr<Product> product;
+            if (category == "图书") {
+                product = std::make_shared<Book>(id, name, desc, price, quantity, seller);
+            } else if (category == "食品") {
+                product = std::make_shared<Food>(id, name, desc, price, quantity, seller);
+            } else if (category == "服装") {
+                product = std::make_shared<Clothing>(id, name, desc, price, quantity, seller);
+            }
+            
+            if (product) {
+                product->setDiscountRate(discount);  // 设置折扣率
+                products.push_back(product);
+            }
+        }
+    }
+    sqlite3_finalize(stmt);
+    return products;
+}
+
+std::vector<std::shared_ptr<Product>> ProductManager::searchByName(const std::string& keyword) const {
+    std::vector<std::shared_ptr<Product>> products;
+    const char* query = "SELECT id, name, category, description, price, quantity, "
+                       "seller_username, discount_rate FROM products WHERE name LIKE ?;";
+    
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db->getHandle(), query, -1, &stmt, nullptr) == SQLITE_OK) {
+        std::string searchPattern = "%" + keyword + "%";
+        sqlite3_bind_text(stmt, 1, searchPattern.c_str(), -1, SQLITE_STATIC);
+        
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            int id = sqlite3_column_int(stmt, 0);
+            std::string name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            std::string category = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+            std::string desc = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+            double price = sqlite3_column_double(stmt, 4);
+            int quantity = sqlite3_column_int(stmt, 5);
+            std::string seller = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6));
+            double discount = sqlite3_column_double(stmt, 7);
+            
+            std::shared_ptr<Product> product;
+            if (category == "图书") {
+                product = std::make_shared<Book>(id, name, desc, price, quantity, seller);
+            } else if (category == "食品") {
+                product = std::make_shared<Food>(id, name, desc, price, quantity, seller);
+            } else if (category == "服装") {
+                product = std::make_shared<Clothing>(id, name, desc, price, quantity, seller);
+            }
+            
+            if (product) {
+                product->setDiscountRate(discount);  // 设置折扣率
+                products.push_back(product);
+            }
+        }
+    }
+    sqlite3_finalize(stmt);
+    return products;
 }
