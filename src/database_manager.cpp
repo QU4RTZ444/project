@@ -56,6 +56,20 @@ void DatabaseManager::init(){
     for (const char* query : createTables) {
         executeQuery(query);
     }
+
+    // 检查并添加 discount_rate 列
+    const char* alterTable = 
+        "ALTER TABLE products ADD COLUMN discount_rate REAL "
+        "DEFAULT 1.0 CHECK(discount_rate > 0 AND discount_rate <= 1);";
+    
+    try {
+        executeQuery(alterTable);
+    } catch (const std::exception& e) {
+        // 如果列已存在，SQLite 会抛出错误，我们可以忽略它
+        #ifdef DEBUG
+        std::cout << "添加 discount_rate 列时出错(可能列已存在): " << e.what() << "\n";
+        #endif
+    }
 }
 
 void DatabaseManager::executeQuery(const std::string& query){

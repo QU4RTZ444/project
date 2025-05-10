@@ -17,6 +17,7 @@ private:
     double basePrice;        // 商品基础价格
     int quantity;            // 商品库存数量
     std::string sellerUsername; // 商家用户名
+    double discountRate = 1.0;  // 折扣率，默认为1表示无折扣
 
 public:
     // 修改构造函数，添加 id 参数
@@ -47,6 +48,19 @@ public:
 
     // 获取商品编号
     int getId() const { return id; }
+
+    // 获取商品描述
+    const std::string& getDescription() const { return description; }
+
+    // 设置折扣率
+    void setDiscountRate(double rate) {
+        if (rate > 0 && rate <= 1) {
+            discountRate = rate;
+        }
+    }
+
+    // 获取折扣率
+    double getDiscountRate() const { return discountRate; }
 };
 
 // 修改子类的构造函数

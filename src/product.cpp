@@ -1,7 +1,7 @@
 #include "include.h"
 
 double Product::getPrice() const{
-  return basePrice;
+  return basePrice * discountRate;
 }
 
 void Product::display() const {

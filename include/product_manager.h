@@ -51,6 +51,20 @@ public:
     
     // 修改商品库存
     bool updateQuantity(int productId, int newQuantity, const std::string& sellerUsername);
+    
+    // 更新商品基本信息
+    bool updateProductInfo(int productId, 
+                         const std::string& name,
+                         const std::string& description,
+                         const std::string& sellerUsername);
+    
+    // 设置商品折扣
+    bool setProductDiscount(int productId, double discountRate, 
+                          const std::string& sellerUsername);
+    
+    // 设置品类折扣
+    bool setCategoryDiscount(const std::string& category, double discountRate, 
+                           const std::string& sellerUsername);
 };
 
 #endif // PRODUCT_MANAGER_H

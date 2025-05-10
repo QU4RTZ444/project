@@ -12,9 +12,10 @@ CREATE TABLE IF NOT EXISTS products (
     name TEXT NOT NULL,
     category TEXT NOT NULL,
     description TEXT,
-    base_price REAL NOT NULL CHECK(base_price >= 0),
+    price REAL NOT NULL CHECK(price >= 0),
     quantity INTEGER NOT NULL CHECK(quantity >= 0),
     seller_username TEXT,
+    discount_rate REAL DEFAULT 1.0 CHECK(discount_rate > 0 AND discount_rate <= 1),
     FOREIGN KEY(seller_username) REFERENCES users(username)
 );
 

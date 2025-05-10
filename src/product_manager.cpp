@@ -294,3 +294,142 @@ bool ProductManager::deleteProduct(int productId) {
     
     return result == SQLITE_DONE;
 }
+
+bool ProductManager::updateProductInfo(int productId, 
+                                     const std::string& name,
+                                     const std::string& description,
+                                     const std::string& sellerUsername) {
+    if (name.empty()) return false;
+    
+    const char* query = "UPDATE products SET name = ?, description = ? "
+                       "WHERE id = ? AND seller_username = ?;";
+    
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db->getHandle(), query, -1, &stmt, nullptr) != SQLITE_OK) {
+        return false;
+    }
+    
+    sqlite3_bind_text(stmt, 1, name.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, description.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 3, productId);
+    sqlite3_bind_text(stmt, 4, sellerUsername.c_str(), -1, SQLITE_STATIC);
+    
+    int result = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    
+    return result == SQLITE_DONE;
+}
+
+bool ProductManager::setProductDiscount(int productId, double discountRate,
+                                      const std::string& sellerUsername) {
+    #ifdef DEBUG
+    std::cout << "开始设置商品折扣...\n";
+    std::cout << "商品ID: " << productId << "\n";
+    std::cout << "折扣率: " << discountRate << "\n";
+    std::cout << "商家: " << sellerUsername << "\n";
+    #endif
+
+    if (discountRate <= 0 || discountRate > 1) {
+        #ifdef DEBUG
+        std::cout << "折扣率无效: " << discountRate << "\n";
+        #endif
+        return false;
+    }
+    
+    const char* query = "UPDATE products SET discount_rate = ? "
+                       "WHERE id = ? AND seller_username = ?;";
+    
+    #ifdef DEBUG
+    std::cout << "准备执行SQL查询: " << query << "\n";
+    #endif
+
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db->getHandle(), query, -1, &stmt, nullptr) != SQLITE_OK) {
+        #ifdef DEBUG
+        std::cout << "SQL准备失败: " << sqlite3_errmsg(db->getHandle()) << "\n";
+        #endif
+        return false;
+    }
+    
+    #ifdef DEBUG
+    std::cout << "绑定参数...\n";
+    #endif
+
+    sqlite3_bind_double(stmt, 1, discountRate);
+    sqlite3_bind_int(stmt, 2, productId);
+    sqlite3_bind_text(stmt, 3, sellerUsername.c_str(), -1, SQLITE_STATIC);
+    
+    int result = sqlite3_step(stmt);
+    #ifdef DEBUG
+    std::cout << "SQL执行结果: " << result << "\n";
+    std::cout << "SQLITE_DONE = " << SQLITE_DONE << "\n";
+    if (result != SQLITE_DONE) {
+        std::cout << "错误信息: " << sqlite3_errmsg(db->getHandle()) << "\n";
+    }
+    #endif
+
+    sqlite3_finalize(stmt);
+    
+    #ifdef DEBUG
+    std::cout << "设置商品折扣" << (result == SQLITE_DONE ? "成功" : "失败") << "\n";
+    #endif
+
+    return result == SQLITE_DONE;
+}
+
+bool ProductManager::setCategoryDiscount(const std::string& category, double discountRate,
+                                       const std::string& sellerUsername) {
+    #ifdef DEBUG
+    std::cout << "开始设置品类折扣...\n";
+    std::cout << "品类: " << category << "\n";
+    std::cout << "折扣率: " << discountRate << "\n";
+    std::cout << "商家: " << sellerUsername << "\n";
+    #endif
+
+    if (discountRate <= 0 || discountRate > 1) {
+        #ifdef DEBUG
+        std::cout << "折扣率无效: " << discountRate << "\n";
+        #endif
+        return false;
+    }
+    
+    const char* query = "UPDATE products SET discount_rate = ? "
+                       "WHERE category = ? AND seller_username = ?;";
+    
+    #ifdef DEBUG
+    std::cout << "准备执行SQL查询: " << query << "\n";
+    #endif
+
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db->getHandle(), query, -1, &stmt, nullptr) != SQLITE_OK) {
+        #ifdef DEBUG
+        std::cout << "SQL准备失败: " << sqlite3_errmsg(db->getHandle()) << "\n";
+        #endif
+        return false;
+    }
+    
+    #ifdef DEBUG
+    std::cout << "绑定参数...\n";
+    #endif
+
+    sqlite3_bind_double(stmt, 1, discountRate);
+    sqlite3_bind_text(stmt, 2, category.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, sellerUsername.c_str(), -1, SQLITE_STATIC);
+    
+    int result = sqlite3_step(stmt);
+    #ifdef DEBUG
+    std::cout << "SQL执行结果: " << result << "\n";
+    std::cout << "SQLITE_DONE = " << SQLITE_DONE << "\n";
+    if (result != SQLITE_DONE) {
+        std::cout << "错误信息: " << sqlite3_errmsg(db->getHandle()) << "\n";
+    }
+    #endif
+
+    sqlite3_finalize(stmt);
+    
+    #ifdef DEBUG
+    std::cout << "设置品类折扣" << (result == SQLITE_DONE ? "成功" : "失败") << "\n";
+    #endif
+
+    return result == SQLITE_DONE;
+}
