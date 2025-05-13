@@ -5,12 +5,6 @@ int main() {
         // 显示启动信息
         std::cout << "正在启动系统...\n";
         
-        // 检查并创建数据目录
-        std::filesystem::path dataPath = "data";
-        if (!std::filesystem::exists(dataPath)) {
-            std::filesystem::create_directory(dataPath);
-        }
-        
         // 初始化数据库
         std::cout << "正在初始化数据库...\n";
         DatabaseManager::getInstance()->init();

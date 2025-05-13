@@ -4,7 +4,7 @@
 
 class Menu::MenuImpl {
 private:
-    static const int ITEMS_PER_PAGE = 5;
+    static const int ITEMS_PER_PAGE = 3;
     UserManager userManager;
     ProductManager productManager;
     MenuHandler handler;
