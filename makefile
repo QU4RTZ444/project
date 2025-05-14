@@ -5,9 +5,6 @@ RELEASEFLAGS = -O2 -DNDEBUG
 INCLUDES = -Iinclude
 LIBS = -lsqlite3
 
-# 添加 JSON 库头文件路径
-INCLUDES += -I/usr/include/nlohmann
-
 # 目标文件目录
 BUILD_DIR = build
 BIN_DIR = bin

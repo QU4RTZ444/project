@@ -85,6 +85,75 @@ public:
      * @details 关闭数据库连接并释放资源
      */
     ~DatabaseManager();
+
+    /**
+     * @brief 保存购物车项目
+     * @param username 用户名
+     * @param productId 商品ID
+     * @param quantity 数量
+     * @return bool 操作是否成功
+     */
+    bool saveCartItem(const std::string& username, int productId, int quantity);
+
+    /**
+     * @brief 删除购物车项目
+     * @param username 用户名
+     * @param productId 商品ID
+     * @return bool 操作是否成功
+     */
+    bool removeCartItem(const std::string& username, int productId);
+
+    /**
+     * @brief 获取用户的购物车
+     * @param username 用户名
+     * @return vector<pair<int, int>> 商品ID和数量的列表
+     */
+    std::vector<std::pair<int, int>> getCartItems(const std::string& username);
+
+    /**
+     * @brief 创建新订单
+     * @param buyerUsername 买家用户名
+     * @param totalAmount 总金额
+     * @return int 新订单ID，失败返回-1
+     */
+    int createOrder(const std::string& buyerUsername, double totalAmount);
+
+    /**
+     * @brief 添加订单项目
+     * @param orderId 订单ID
+     * @param productId 商品ID
+     * @param quantity 数量
+     * @param price 价格
+     * @param sellerUsername 卖家用户名
+     * @return bool 操作是否成功
+     */
+    bool addOrderItem(int orderId, int productId, int quantity, 
+                     double price, const std::string& sellerUsername);
+
+    /**
+     * @brief 锁定商品库存
+     * @param productId 商品ID
+     * @param orderId 订单ID
+     * @param quantity 锁定数量
+     * @return bool 操作是否成功
+     */
+    bool lockProductStock(int productId, int orderId, int quantity);
+
+    /**
+     * @brief 解锁商品库存
+     * @param productId 商品ID
+     * @param orderId 订单ID
+     * @return bool 操作是否成功
+     */
+    bool unlockProductStock(int productId, int orderId);
+
+    /**
+     * @brief 更新订单状态
+     * @param orderId 订单ID
+     * @param status 新状态
+     * @return bool 操作是否成功
+     */
+    bool updateOrderStatus(int orderId, const std::string& status);
 };
 
 #endif // database_manager_H

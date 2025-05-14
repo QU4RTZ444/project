@@ -27,10 +27,17 @@
 #include "product.h"
 #include "platform_utils.h"
 #include "menu_handler.h"
+#include "order.h"
+#include "shopping_cart.h"
 
 // 再包含管理器类
 #include "user_manager.h"
 #include "product_manager.h"
 #include "menu.h"
+#include "order_manager.h"
+
+// 添加新的常量定义
+const int ORDER_TIMEOUT = 1800;  // 订单超时时间(秒)
+const int MAX_CART_ITEMS = 10;   // 购物车最大商品数
 
 #endif // include_H

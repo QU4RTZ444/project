@@ -63,6 +63,58 @@ void DatabaseManager::init(){
         std::cout << "添加 discount_rate 列时出错(可能列已存在): " << e.what() << "\n";
         #endif
     }
+
+    // 创建购物车表
+    executeQuery(R"(
+        CREATE TABLE IF NOT EXISTS shopping_cart (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            product_id INTEGER NOT NULL,
+            quantity INTEGER NOT NULL,
+            FOREIGN KEY (username) REFERENCES users(username),
+            FOREIGN KEY (product_id) REFERENCES products(id)
+        )
+    )");
+
+    // 创建订单表
+    executeQuery(R"(
+        CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            buyer_username TEXT NOT NULL,
+            total_amount REAL NOT NULL,
+            status TEXT NOT NULL,
+            create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (buyer_username) REFERENCES users(username)
+        )
+    )");
+
+    // 创建订单项目表
+    executeQuery(R"(
+        CREATE TABLE IF NOT EXISTS order_items (
+            order_id INTEGER NOT NULL,
+            product_id INTEGER NOT NULL,
+            quantity INTEGER NOT NULL,
+            price REAL NOT NULL,
+            seller_username TEXT NOT NULL,
+            PRIMARY KEY (order_id, product_id),
+            FOREIGN KEY (order_id) REFERENCES orders(id),
+            FOREIGN KEY (product_id) REFERENCES products(id),
+            FOREIGN KEY (seller_username) REFERENCES users(username)
+        )
+    )");
+
+    // 创建商品库存锁定表
+    executeQuery(R"(
+        CREATE TABLE IF NOT EXISTS product_locks (
+            product_id INTEGER NOT NULL,
+            order_id INTEGER NOT NULL,
+            locked_quantity INTEGER NOT NULL,
+            lock_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (product_id, order_id),
+            FOREIGN KEY (product_id) REFERENCES products(id),
+            FOREIGN KEY (order_id) REFERENCES orders(id)
+        )
+    )");
 }
 
 void DatabaseManager::executeQuery(const std::string& query){
