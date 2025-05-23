@@ -27,22 +27,18 @@ private:
     /** @brief 商家用户名 */
     std::string sellerUsername;
     /** @brief 折扣率，默认为1表示无折扣 */
-    double discountRate = 1.0;
+    double discountRate;
 
 public:
-    /**
-     * @brief 构造函数
-     * @param productId 商品编号
-     * @param n 商品名称
-     * @param desc 商品描述
-     * @param price 商品价格
-     * @param qty 商品数量
-     * @param seller 商家用户名(可选)
-     */
-    Product(int productId, const std::string& n, const std::string& desc, 
-            double price, int qty, const std::string& seller = "")
-        : id(productId), name(n), description(desc), basePrice(price), 
-          quantity(qty), sellerUsername(seller) {}
+    Product(int id, const std::string& name, const std::string& desc, 
+            double price, int qty, const std::string& seller)
+        : id(id), 
+          name(name), 
+          description(desc), 
+          basePrice(price),
+          quantity(qty),
+          sellerUsername(seller),
+          discountRate(1.0) {}  // 初始化折扣率为1.0（无折扣）
 
     /**
      * @brief 虚析构函数
@@ -50,11 +46,24 @@ public:
     virtual ~Product() = default;
 
     /**
-     * @brief 获取商品实际价格
-     * @details 考虑折扣等因素计算最终价格
-     * @return double 商品实际价格
+     * @brief 获取商品基础价格（未打折）
+     * @return double 基础价格
      */
-    virtual double getPrice() const;
+    double getBasePrice() const { return basePrice; }
+
+    /**
+     * @brief 获取商品实际价格（考虑折扣）
+     * @return double 实际价格
+     */
+    virtual double getPrice() const {
+        #ifdef DEBUG
+        std::cout << "[DEBUG] getPrice() 被调用\n";
+        std::cout << "[DEBUG] basePrice = " << basePrice << "\n";
+        std::cout << "[DEBUG] discountRate = " << discountRate << "\n";
+        std::cout << "[DEBUG] 计算结果 = " << (basePrice * discountRate) << "\n";
+        #endif
+        return basePrice * discountRate;
+    }
 
     /**
      * @brief 获取商品类别
@@ -118,6 +127,30 @@ public:
      * @return double 当前折扣率
      */
     double getDiscountRate() const { return discountRate; }
+
+    /**
+     * @brief 获取商品库存数量
+     * @return int 库存数量
+     */
+    int getQuantity() const { return quantity; }
+
+    /**
+     * @brief 设置商品库存数量
+     * @param qty 新的库存数量
+     * @throw std::runtime_error 如果数量为负数
+     */
+    void setQuantity(int qty) {
+        if (qty < 0) {
+            throw std::runtime_error("库存数量不能为负");
+        }
+        quantity = qty;
+    }
+
+    /**
+     * @brief 商品状态检查方法
+     * @return bool 如果商品有库存则返回true，否则返回false
+     */
+    bool isAvailable() const { return quantity > 0; }
 };
 
 /**
@@ -133,10 +166,10 @@ public:
      * @param desc 图书描述
      * @param price 图书价格
      * @param qty 库存数量
-     * @param seller 商家用户名(可选)
+     * @param seller 商家用户名
      */
     Book(int productId, const std::string& n, const std::string& desc, 
-         double price, int qty, const std::string& seller = "")
+         double price, int qty, const std::string& seller)
         : Product(productId, n, desc, price, qty, seller) {}
     
     /**
@@ -159,10 +192,10 @@ public:
      * @param desc 食品描述
      * @param price 食品价格
      * @param qty 库存数量
-     * @param seller 商家用户名(可选)
+     * @param seller 商家用户名
      */
     Food(int productId, const std::string& n, const std::string& desc, 
-         double price, int qty, const std::string& seller = "")
+         double price, int qty, const std::string& seller)
         : Product(productId, n, desc, price, qty, seller) {}
     
     /**
@@ -185,10 +218,10 @@ public:
      * @param desc 服装描述
      * @param price 服装价格
      * @param qty 库存数量
-     * @param seller 商家用户名(可选)
+     * @param seller 商家用户名
      */
     Clothing(int productId, const std::string& n, const std::string& desc, 
-             double price, int qty, const std::string& seller = "")
+             double price, int qty, const std::string& seller)
         : Product(productId, n, desc, price, qty, seller) {}
     
     /**

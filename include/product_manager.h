@@ -174,6 +174,14 @@ public:
      * @return vector<shared_ptr<Product>> 匹配的商品列表
      */
     std::vector<std::shared_ptr<Product>> searchByName(const std::string& keyword) const;
+
+    /**
+     * @brief 根据ID获取商品
+     * @param productId 商品ID
+     * @return shared_ptr<Product> 商品对象指针，如果不存在返回nullptr
+     * @throw std::runtime_error 如果查询失败
+     */
+    std::shared_ptr<Product> getProduct(int productId) const;
 };
 
 #endif // PRODUCT_MANAGER_H

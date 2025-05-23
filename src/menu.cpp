@@ -43,7 +43,13 @@ public:
                 }
                     
                 case 3: {
-                    handler.handleBrowseProducts();
+                    try {
+                        // 未登录用户只能浏览，不能购买
+                        std::shared_ptr<User> anonymousUser = nullptr;
+                        handler.handleBrowseProducts(anonymousUser);
+                    } catch (const std::exception& e) {
+                        std::cerr << "浏览失败: " << e.what() << "\n";
+                    }
                     handler.waitForKey();
                     break;
                 }
@@ -53,19 +59,23 @@ public:
 
     void displayUserMenu(const std::shared_ptr<User>& currentUser) {
         while (true) {
-            Menu::clearScreen();
-            if (currentUser->getUserType() == "消费者") {
-                Menu::showConsumerMenu();
-                if (handler.handleConsumerChoice(currentUser)) {  // 使用 MenuHandler 的实现
-                    return;
+            try {
+                Menu::clearScreen();
+                if (currentUser->getUserType() == "消费者") {
+                    Menu::showConsumerMenu();
+                    if (handler.handleConsumerChoice(currentUser)) {
+                        return;
+                    }
+                } else if (currentUser->getUserType() == "商家") {
+                    Menu::showSellerMenu();
+                    if (handler.handleSellerChoice(currentUser)) {
+                        return;
+                    }
                 }
-            } else if (currentUser->getUserType() == "商家") {
-                Menu::showSellerMenu();
-                if (handler.handleSellerChoice(currentUser)) {  // 使用 MenuHandler 的实现
-                    return;
-                }
+            } catch (const std::exception& e) {
+                std::cerr << "操作失败: " << e.what() << "\n";
+                handler.waitForKey();
             }
-            handler.waitForKey();
         }
     }
 };

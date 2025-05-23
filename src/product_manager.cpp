@@ -324,61 +324,29 @@ bool ProductManager::updateProductInfo(int productId,
     return result == SQLITE_DONE;
 }
 
-bool ProductManager::setProductDiscount(int productId, double discountRate,
-                                      const std::string& sellerUsername) {
-    #ifdef DEBUG
-    std::cout << "开始设置商品折扣...\n";
-    std::cout << "商品ID: " << productId << "\n";
-    std::cout << "折扣率: " << discountRate << "\n";
-    std::cout << "商家: " << sellerUsername << "\n";
-    #endif
-
+bool ProductManager::setProductDiscount(int productId, double discountRate, const std::string& sellerUsername) {
     if (discountRate <= 0 || discountRate > 1) {
-        #ifdef DEBUG
-        std::cout << "折扣率无效: " << discountRate << "\n";
-        #endif
         return false;
     }
-    
-    const char* query = "UPDATE products SET discount_rate = ? "
-                       "WHERE id = ? AND seller_username = ?;";
-    
-    #ifdef DEBUG
-    std::cout << "准备执行SQL查询: " << query << "\n";
-    #endif
 
+    const char* query = "UPDATE products SET discount_rate = ? "
+                       "WHERE id = ? AND seller_username = ? "
+                       "AND EXISTS (SELECT 1 FROM users WHERE username = ? AND user_type = 'Seller')";
+    
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db->getHandle(), query, -1, &stmt, nullptr) != SQLITE_OK) {
-        #ifdef DEBUG
-        std::cout << "SQL准备失败: " << sqlite3_errmsg(db->getHandle()) << "\n";
-        #endif
         return false;
     }
     
-    #ifdef DEBUG
-    std::cout << "绑定参数...\n";
-    #endif
-
     sqlite3_bind_double(stmt, 1, discountRate);
     sqlite3_bind_int(stmt, 2, productId);
     sqlite3_bind_text(stmt, 3, sellerUsername.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, sellerUsername.c_str(), -1, SQLITE_STATIC);
     
-    int result = sqlite3_step(stmt);
-    #ifdef DEBUG
-    std::cout << "SQL执行结果: " << result << "\n";
-    std::cout << "SQLITE_DONE = " << SQLITE_DONE << "\n";
-    if (result != SQLITE_DONE) {
-        std::cout << "错误信息: " << sqlite3_errmsg(db->getHandle()) << "\n";
-    }
-    #endif
-
+    bool success = sqlite3_step(stmt) == SQLITE_DONE;
     sqlite3_finalize(stmt);
     
-    #ifdef DEBUG
-    std::cout << "设置商品折扣" << (result == SQLITE_DONE ? "成功" : "失败") << "\n";
-    #endif
-
-    return result == SQLITE_DONE;
+    return success;
 }
 
 bool ProductManager::setCategoryDiscount(const std::string& category, double discountRate,
@@ -552,4 +520,46 @@ std::vector<std::shared_ptr<Product>> ProductManager::searchByName(const std::st
     }
     sqlite3_finalize(stmt);
     return products;
+}
+
+std::shared_ptr<Product> ProductManager::getProduct(int productId) const {
+    const char* query = "SELECT name, description, price, quantity, category, "
+                       "seller_username, discount_rate "
+                       "FROM products WHERE id = ?";
+                       
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db->getHandle(), query, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error("准备查询商品语句失败");
+    }
+    
+    sqlite3_bind_int(stmt, 1, productId);
+    
+    std::shared_ptr<Product> product = nullptr;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        std::string name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        std::string description = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        double price = sqlite3_column_double(stmt, 2);
+        int quantity = sqlite3_column_int(stmt, 3);
+        std::string category = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+        std::string seller = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
+        double discount = sqlite3_column_double(stmt, 6);
+        
+        if (category == "图书") {
+            product = std::make_shared<Book>(productId, name, description, 
+                                           price, quantity, seller);
+        } else if (category == "食品") {
+            product = std::make_shared<Food>(productId, name, description, 
+                                           price, quantity, seller);
+        } else if (category == "服装") {
+            product = std::make_shared<Clothing>(productId, name, description, 
+                                               price, quantity, seller);
+        }
+        
+        if (product) {
+            product->setDiscountRate(discount);  // 设置折扣率
+        }
+    }
+    
+    sqlite3_finalize(stmt);
+    return product;
 }

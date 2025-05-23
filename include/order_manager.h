@@ -14,6 +14,20 @@ private:
     /** @brief 数据库管理器指针 */
     DatabaseManager* db;
 
+    /**
+     * @brief 获取订单的所有商品项
+     * @param orderId 订单ID
+     * @return vector<CartItem> 订单项列表
+     */
+    std::vector<CartItem> getOrderItems(int orderId) const;
+    
+    /**
+     * @brief 根据类别创建对应的商品对象
+     */
+    std::shared_ptr<Product> createProductFromCategory(int id, const std::string& name,
+        const std::string& description, double price, int quantity,
+        const std::string& seller, const std::string& category) const;
+
 public:
     /**
      * @brief 构造函数

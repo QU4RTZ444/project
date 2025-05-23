@@ -2,7 +2,6 @@
 #define ORDER_H
 
 #include "include.h"
-#include "shopping_cart.h"
 
 /**
  * @brief 订单状态枚举
@@ -62,6 +61,16 @@ public:
     double getTotalAmount() const { return totalAmount; }
     const std::vector<CartItem>& getItems() const { return items; }
     const std::string& getCreateTime() const { return createTime; }
+
+    // Setters
+    void setTotalAmount(double amount) { totalAmount = amount; }
+    void setStatus(const std::string& status) {
+        if (status == "pending") this->status = OrderStatus::PENDING;
+        else if (status == "paid") this->status = OrderStatus::PAID;
+        else if (status == "cancelled") this->status = OrderStatus::CANCELLED;
+        else if (status == "failed") this->status = OrderStatus::FAILED;
+    }
+    void setCreateTime(const std::string& time) { createTime = time; }
 };
 
 #endif // ORDER_H

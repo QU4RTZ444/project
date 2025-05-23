@@ -70,4 +70,4 @@ dist: release
 clean:
 		rm -rf $(BUILD_DIR) $(BIN_DIR)
 
-.PHONY: all debug release clean dist
+.PHONY: all debug release clean dist test

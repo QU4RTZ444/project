@@ -13,12 +13,25 @@ private:
     sqlite3* db;
     static DatabaseManager* instance;
     static const std::string DB_FILE;
+    bool inTransaction;  // 添加事务状态跟踪
     
     /**
      * @brief 私有构造函数，实现单例模式
      * @details 初始化数据库连接句柄为空
      */
     DatabaseManager();
+
+    void checkConnection() const {
+        if (!db) {
+            throw std::runtime_error("数据库连接未初始化");
+        }
+    }
+    
+    void checkTransaction() const {
+        if (!inTransaction) {
+            throw std::runtime_error("没有活动的事务");
+        }
+    }
 
 public:
     /**
@@ -154,6 +167,29 @@ public:
      * @return bool 操作是否成功
      */
     bool updateOrderStatus(int orderId, const std::string& status);
+
+    /**
+     * @brief 获取用户余额
+     * @param username 用户名
+     * @return double 用户余额
+     * @throw std::runtime_error 如果用户不存在
+     */
+    double getUserBalance(const std::string& username) const;
+
+    /**
+     * @brief 更新用户余额
+     * @param username 用户名
+     * @param newBalance 新余额
+     * @return bool 更新是否成功
+     * @throw std::runtime_error 如果更新失败
+     */
+    bool updateBalance(const std::string& username, double newBalance);
+
+    /**
+     * @brief 检查是否处于事务中
+     * @return bool 是否处于事务中
+     */
+    bool isInTransaction() const { return inTransaction; }
 };
 
 #endif // database_manager_H
