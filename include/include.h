@@ -43,10 +43,16 @@
 // 界面管理类
 #include "menu.h"
 #include "menu_handler.h"
+#include "menu_handler_base.h"
+#include "cart_handler.h"
+#include "order_handler.h"
+#include "product_handler_base.h"
+#include "user_handler.h"
 
 // 添加新的常量定义
 const int ORDER_TIMEOUT = 1800;  // 订单超时时间(秒)
 const int MAX_CART_ITEMS = 10;   // 购物车最大商品数
+const int ITEMS_PER_PAGE = 3;  // 每页显示的商品数量
 
 #ifndef DEBUG
 //#define DEBUG  // 注释掉以禁用调试信息

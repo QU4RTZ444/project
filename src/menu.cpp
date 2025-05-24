@@ -1,18 +1,15 @@
 #include "menu.h"
 #include "platform_utils.h"
-#include "menu_handler.h"
 
 class Menu::MenuImpl {
 private:
-    static const int ITEMS_PER_PAGE = 3;
-    UserManager userManager;
-    ProductManager productManager;
     MenuHandler handler;
 
 public:
-    MenuImpl() : handler(userManager, productManager) {}
+    MenuImpl(UserManager& um, ProductManager& pm) 
+        : handler(um, pm) {}
 
-    void displayMainMenu() {
+    void run() {
         while(true) {
             Menu::showMainMenu();
             int choice = Menu::getChoice(0, 3);
@@ -23,41 +20,40 @@ public:
                     return;
                     
                 case 1: {
-                    auto currentUser = handler.handleLogin();
+                    // 修改这里，使用 handler 的 UserHandler 组件
+                    auto currentUser = handler.getUserHandler().handleLogin();
                     if (currentUser) {
-                        displayUserMenu(currentUser);
+                        handleUserMenu(currentUser);
                     }
-                    handler.waitForKey();
                     break;
                 }
                     
                 case 2: {
-                    bool success = handler.handleRegister();
-                    if (success) {
+                    // 修改这里，使用 handler 的 UserHandler 组件
+                    if (handler.getUserHandler().handleRegister()) {
                         std::cout << "注册成功！\n";
                     } else {
                         std::cout << "注册失败：用户名可能已存在\n";
                     }
-                    handler.waitForKey();
                     break;
                 }
                     
                 case 3: {
                     try {
-                        // 未登录用户只能浏览，不能购买
-                        std::shared_ptr<User> anonymousUser = nullptr;
-                        handler.handleBrowseProducts(anonymousUser);
+                        // 修改这里，使用 handler 的 ProductHandler 组件
+                        handler.getProductHandler().handleBrowseProducts(nullptr);
                     } catch (const std::exception& e) {
                         std::cerr << "浏览失败: " << e.what() << "\n";
                     }
-                    handler.waitForKey();
                     break;
                 }
             }
+            handler.waitForKey();
         }
     }
 
-    void displayUserMenu(const std::shared_ptr<User>& currentUser) {
+private:
+    void handleUserMenu(const std::shared_ptr<User>& currentUser) {
         while (true) {
             try {
                 Menu::clearScreen();
@@ -80,15 +76,14 @@ public:
     }
 };
 
-// Menu 类的公共成员函数实现
-void Menu::displayMainMenu() {
-    MenuImpl impl;
-    impl.displayMainMenu();
-}
+// Menu 类的实现
+Menu::Menu(UserManager& um, ProductManager& pm) 
+    : pimpl(std::make_unique<MenuImpl>(um, pm)) {}
 
-void Menu::displayUserMenu(const std::shared_ptr<User>& currentUser) {
-    MenuImpl impl;
-    impl.displayUserMenu(currentUser);
+Menu::~Menu() = default;
+
+void Menu::run() {
+    pimpl->run();
 }
 
 void Menu::showMainMenu() {
@@ -101,7 +96,7 @@ void Menu::showMainMenu() {
     std::cout << "│  3. 浏览所有商品               │\n";
     std::cout << "│  0. 退出系统                   │\n";
     std::cout << "└────────────────────────────────┘\n";
-    std::cout <<"输入选择(0~3)\n";
+    std::cout << "输入选择(0~3): ";
 }
 
 void Menu::showConsumerMenu() {

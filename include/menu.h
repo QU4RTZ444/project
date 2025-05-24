@@ -7,38 +7,29 @@
 #define MENU_H
 
 #include "include.h"
+#include "menu_handler.h"
 
 class Menu {
 private:
     class MenuImpl;  // 前向声明
 
 public:
-    public:
     /**
-     * @brief 显示主菜单界面
+     * @brief 构造函数
+     * @param um 用户管理器
+     * @param pm 商品管理器
      */
-    static void displayMainMenu();
+    Menu(UserManager& um, ProductManager& pm);
+    
+    /**
+     * @brief 析构函数
+     */
+    ~Menu();
 
     /**
-     * @brief 根据用户类型显示对应的用户菜单
-     * @param currentUser 当前登录的用户对象
+     * @brief 显示并运行主菜单
      */
-    static void displayUserMenu(const std::shared_ptr<User>& currentUser);
-
-    /**
-     * @brief 显示主菜单选项
-     */
-    static void showMainMenu();
-
-    /**
-     * @brief 显示消费者菜单选项
-     */
-    static void showConsumerMenu();
-
-    /**
-     * @brief 显示商家菜单选项
-     */
-    static void showSellerMenu();
+    void run();
 
     /**
      * @brief 获取用户输入的选项
@@ -52,6 +43,24 @@ public:
      * @brief 清空控制台屏幕
      */
     static void clearScreen();
+
+    /**
+     * @brief 显示主菜单界面
+     */
+    static void showMainMenu();
+
+    /**
+     * @brief 显示消费者菜单选项
+     */
+    static void showConsumerMenu();
+
+    /**
+     * @brief 显示商家菜单选项
+     */
+    static void showSellerMenu();
+
+private:
+    std::unique_ptr<MenuImpl> pimpl; // PIMPL 实现
 };
 
-#endif // MENU_H
+#endif

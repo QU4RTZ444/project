@@ -1,4 +1,6 @@
 #include "include.h"
+#include "menu.h"
+#include "platform_utils.h"
 
 int main() {
     try {
@@ -35,10 +37,13 @@ int main() {
         std::cout << "正在初始化系统组件...\n";
         UserManager userManager;
         ProductManager productManager;
-        Menu m;
+        
+        // 使用新的构造方式创建 Menu 对象
+        Menu menu(userManager, productManager);
 
+        // 清屏并运行主菜单
         PlatformUtils::clearScreen();
-        m.displayMainMenu();
+        menu.run();
 
     } catch (const std::exception& e) {
         std::cerr << "程序发生严重错误: " << e.what() << std::endl;
