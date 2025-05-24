@@ -2,16 +2,21 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -D__linux__
 DEBUGFLAGS = -DDEBUG -g -O0
 RELEASEFLAGS = -O2 -DNDEBUG
-INCLUDES = -Iinclude
+INCLUDES = -Iinclude -Iinclude/base -Iinclude/handlers -Iinclude/managers -Iinclude/models -Iinclude/utils
 LIBS = -lsqlite3
 
-# 目标文件目录
+# 目标文件目录结构
 BUILD_DIR = build
 BIN_DIR = bin
 RELEASE_DIR = $(BIN_DIR)/release
 
-# 源文件
-SRCS = $(wildcard src/*.cpp)
+# 源文件目录结构
+SRC_DIRS = src src/base src/handlers src/managers src/models src/utils
+
+# 获取所有源文件
+SRCS = $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.cpp))
+
+# 创建对应的目标文件路径
 OBJS = $(SRCS:src/%.cpp=$(BUILD_DIR)/%.o)
 RELEASE_OBJS = $(SRCS:src/%.cpp=$(BUILD_DIR)/release/%.o)
 
@@ -30,10 +35,20 @@ debug: $(TARGET)
 release: CXXFLAGS += $(RELEASEFLAGS)
 release: $(RELEASE_TARGET)
 
-# 创建目录
+# 创建编译所需的目录结构
 $(BUILD_DIR):
 		mkdir -p $(BUILD_DIR)
 		mkdir -p $(BUILD_DIR)/release
+		mkdir -p $(BUILD_DIR)/base
+		mkdir -p $(BUILD_DIR)/handlers
+		mkdir -p $(BUILD_DIR)/managers
+		mkdir -p $(BUILD_DIR)/models
+		mkdir -p $(BUILD_DIR)/utils
+		mkdir -p $(BUILD_DIR)/release/base
+		mkdir -p $(BUILD_DIR)/release/handlers
+		mkdir -p $(BUILD_DIR)/release/managers
+		mkdir -p $(BUILD_DIR)/release/models
+		mkdir -p $(BUILD_DIR)/release/utils
 
 $(BIN_DIR):
 		mkdir -p $(BIN_DIR)
@@ -41,10 +56,12 @@ $(BIN_DIR):
 
 # Debug版本编译规则
 $(BUILD_DIR)/%.o: src/%.cpp | $(BUILD_DIR)
+		@mkdir -p $(@D)
 		$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 # Release版本编译规则
 $(BUILD_DIR)/release/%.o: src/%.cpp | $(BUILD_DIR)
+		@mkdir -p $(@D)
 		$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 # Debug版本链接规则
@@ -62,7 +79,7 @@ $(RELEASE_TARGET): $(RELEASE_OBJS) | $(BIN_DIR)
 dist: release
 		mkdir -p $(RELEASE_DIR)/dist
 		cp $(RELEASE_TARGET) $(RELEASE_DIR)/dist/
-		cp -r data $(RELEASE_DIR)/dist/
+		cp -r sql $(RELEASE_DIR)/dist/
 		cd $(RELEASE_DIR) && tar czf ecommerce.tar.gz dist
 	@echo "发布包已创建: $(RELEASE_DIR)/ecommerce.tar.gz"
 
@@ -70,4 +87,12 @@ dist: release
 clean:
 		rm -rf $(BUILD_DIR) $(BIN_DIR)
 
-.PHONY: all debug release clean dist test
+# 显示调试信息
+info:
+		@echo "源文件:"
+		@echo $(SRCS)
+		@echo
+		@echo "目标文件:"
+		@echo $(OBJS)
+
+.PHONY: all debug release clean dist test info
