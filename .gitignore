@@ -1,0 +1,49 @@
+# === 通用 C++ 文件 ===
+*.exe
+*.dll
+*.lib
+*.pdb
+*.obj
+*.exp
+*.ilk
+*.pch
+*.log
+
+# === Visual Studio 自动生成 ===
+.vs/
+*.suo
+*.user
+*.VC.db
+*.VC.opendb
+*.opensdf
+*.sdf
+*.cache
+*.tlog/
+*.ipch/
+*.lastbuildstate
+
+# === VS 构建输出目录 ===
+**/Debug/
+**/Release/
+**/x64/
+**/x86/
+**/ecommerce_client/x64/
+**/ecommerce_server/x64/
+
+# === 编译中间文件 ===
+*.idb
+*.bsc
+*.res
+*.tlh
+*.tli
+
+# === 本地设置与日志 ===
+*.log
+*.tmp
+*.bak
+
+# === 临时备份 ===
+*~
+*.swp
+*.DS_Store
+Thumbs.db
